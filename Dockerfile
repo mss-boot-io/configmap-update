@@ -9,7 +9,6 @@ RUN apk update && apk add tzdata && apk add curl unzip procps ca-certificates
 
 COPY go.mod ./go.mod
 COPY . .
-RUN pwd && ls
 
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -a -installsuffix cgo -o configmap-update .
 
