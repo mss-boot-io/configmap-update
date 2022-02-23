@@ -99,7 +99,7 @@ jobs:
           cluster-url: ${{ steps.kubeconfig.outputs.cluster_url }}
           token: ${{ steps.kubeconfig.outputs.token }}
           name: alerting-rules
-          namespace: prometheus
+          namespace: default
           files: |
             - example/test.yml
 
