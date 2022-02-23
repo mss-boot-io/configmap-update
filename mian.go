@@ -18,6 +18,10 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+func init() {
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+}
+
 func main() {
 	clusterURL, err := url.Parse(os.Getenv("cluster_url"))
 	if err != nil {
@@ -39,11 +43,22 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	cm, err := clientset.CoreV1().
+	create := false
+	cm := &corev1.ConfigMap{}
+	cm, err = clientset.CoreV1().
 		ConfigMaps(os.Getenv("namespace")).
 		Get(context.TODO(), os.Getenv("name"), metav1.GetOptions{})
+	if errors.IsNotFound(err) {
+		create = true
+		err = nil
+		cm.Namespace = os.Getenv("namespace")
+		cm.Name = os.Getenv("name")
+	}
 
-	data := make(map[string]string)
+	if cm.Data == nil {
+		cm.Data = make(map[string]string)
+	}
+
 	if os.Getenv("files") != "" {
 		//get file content
 		files := make([]string, 0)
@@ -60,7 +75,7 @@ func main() {
 			if err != nil {
 				log.Fatalln(err)
 			}
-			data[filepath.Base(files[i])] = string(rb)
+			cm.Data[filepath.Base(files[i])] = string(rb)
 		}
 	}
 	if os.Getenv("data") != "" || os.Getenv("data") != "{}" {
@@ -74,28 +89,22 @@ func main() {
 			}
 		}
 		for k := range params {
-			data[k] = params[k]
+			cm.Data[k] = params[k]
 		}
 
 	}
 
-	if errors.IsNotFound(err) {
+	if create {
+		err = nil
 		cm = &corev1.ConfigMap{}
 		cm.Namespace = os.Getenv("namespace")
 		cm.Name = os.Getenv("name")
-		cm.Data = data
 		_, err = clientset.CoreV1().ConfigMaps(cm.Namespace).Create(context.TODO(), cm, metav1.CreateOptions{})
 		if err != nil {
 			log.Fatalln(err)
 		}
 		fmt.Printf("create configmap(%s) success\n", cm.Name)
 		return
-	}
-	if cm.Data == nil {
-		cm.Data = make(map[string]string)
-	}
-	for k := range data {
-		cm.Data[k] = data[k]
 	}
 	cm.Namespace = os.Getenv("namespace")
 	cm.Name = os.Getenv("name")
