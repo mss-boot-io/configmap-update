@@ -1,0 +1,10 @@
+---
+groups:
+  - name: "default_group"
+    rules:
+      - alert: "custom_default_counter"
+        expr: "increase(custom_counter{function_invoke_result=\"failed\"}[20s])>0"
+        annotations:
+          summary: "function_invoke_failed"
+          description: "function_invoke_failed"
+        for: "15s"

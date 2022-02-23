@@ -1,0 +1,37 @@
+name: 'configmap-update'
+description: 'configmap update action'
+inputs:
+  cluster-url:
+    description: 'k8s api server url'
+    required: true
+    default: ''
+  token:
+    description: 'k8s api token'
+    required: true
+    default: ''
+  name:
+    description: 'configmap name'
+    required: true
+    default: 'alerting-rules'
+  namespace:
+    description: 'namespace'
+    required: true
+    default: 'default'
+  files:
+    description: 'file paths'
+    required: false
+    default: ''
+  data:
+    description: 'configmap data'
+    required: false
+    default: '{}'
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.cluster-url}}
+    - ${{ inputs.token }}
+    - ${{ inputs.name }}
+    - ${{ inputs.namespace }}
+    - ${{ inputs.files }}
+    - ${{ inputs.data }}
