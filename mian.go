@@ -11,6 +11,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/client-go/util/homedir"
 	"log"
 	"net/url"
 	"os"
@@ -22,18 +24,28 @@ func init() {
 }
 
 func main() {
-	clusterURL, err := url.Parse(os.Getenv("cluster_url"))
-	if err != nil {
-		log.Fatalln(err)
+	var kubeConfig string
+	if home := homedir.HomeDir(); home != "" {
+		kubeConfig = filepath.Join(home, ".kube", "config")
 	}
 
-	config := &rest.Config{
-		Host:    clusterURL.Host,
-		APIPath: clusterURL.Path,
-		TLSClientConfig: rest.TLSClientConfig{
-			Insecure: true,
-		},
-		BearerToken: os.Getenv("token"),
+	// use the current context in kubeconfig
+	config, err := clientcmd.BuildConfigFromFlags("", kubeConfig)
+	if err != nil {
+		err = nil
+		clusterURL, err := url.Parse(os.Getenv("cluster_url"))
+		if err != nil {
+			log.Fatalln(err)
+		}
+
+		config = &rest.Config{
+			Host:    clusterURL.Host,
+			APIPath: clusterURL.Path,
+			TLSClientConfig: rest.TLSClientConfig{
+				Insecure: true,
+			},
+			BearerToken: os.Getenv("token"),
+		}
 	}
 
 	// create the clientset
