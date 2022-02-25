@@ -4,18 +4,17 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
-	"net/url"
-	"os"
-	"path/filepath"
-
 	"github.com/ghodss/yaml"
+	"io/ioutil"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"log"
+	"net/url"
+	"os"
+	"path/filepath"
 )
 
 func init() {
@@ -59,9 +58,9 @@ func main() {
 		cm.Data = make(map[string]string)
 	}
 
+	files := make([]string, 0)
 	if os.Getenv("files") != "" {
 		//get file content
-		files := make([]string, 0)
 		err = yaml.Unmarshal([]byte(os.Getenv("files")), &files)
 		if err != nil {
 			err = nil
@@ -70,13 +69,23 @@ func main() {
 				log.Fatalln(err)
 			}
 		}
-		for i := range files {
-			rb, err := ioutil.ReadFile(files[i])
-			if err != nil {
-				log.Fatalln(err)
-			}
-			cm.Data[filepath.Base(files[i])] = string(rb)
+	}
+	if os.Getenv("dir") != "" {
+		filepathNames, err := filepath.Glob(filepath.Join(os.Getenv("dir"), "*"))
+		if err != nil {
+			log.Fatalln(err)
 		}
+		for i := range filepathNames {
+			fmt.Println(filepathNames[i]) //打印path
+			files = append(files, filepath.Join(os.Getenv("dir"), filepathNames[i]))
+		}
+	}
+	for i := range files {
+		rb, err := ioutil.ReadFile(files[i])
+		if err != nil {
+			log.Fatalln(err)
+		}
+		cm.Data[filepath.Base(files[i])] = string(rb)
 	}
 	if os.Getenv("data") != "" || os.Getenv("data") != "{}" {
 		params := make(map[string]string)

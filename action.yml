@@ -25,6 +25,10 @@ inputs:
     description: 'configmap data'
     required: false
     default: '{}'
+  dir:
+    description: 'config path'
+    required: false
+    default: ''
 runs:
   using: 'docker'
   image: 'Dockerfile'

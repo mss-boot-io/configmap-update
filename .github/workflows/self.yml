@@ -100,7 +100,8 @@ jobs:
           token: ${{ steps.kubeconfig.outputs.token }}
           name: alerting-rules
           namespace: default
-          files: |
-            - example/test.yml
+          dir: example
+#          files: |
+#            - example/test.yml
 
 
