@@ -13,7 +13,7 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - name: Set up Go 1.17
         uses: actions/setup-go@v1
@@ -31,7 +31,7 @@ jobs:
           make build
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs: build
     steps:
       - name: Checkout
@@ -55,13 +55,13 @@ jobs:
       - name: Update Kubeconfig
         run: aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }}
 
-      - id: kubeconfig
-        name: Kubeconfig Params
-        run: |
-          export cluster_url=`kubectl cluster-info | grep -E '(https):[-A-Za-z0-9+&@#/%?=~_|.;]+[-A-Za-z0-9+&@#/%=~_|]' -o -m 1`
-          export token=`kubectl -n kube-system get secret $(kubectl -n kube-system get secret | grep argocd-manager | awk '{print $1}') -o jsonpath='{.data.token}' | base64 --decode`
-          echo "::set-output name=cluster_url::${cluster_url}"
-          echo "::set-output name=token::${token}"
+#      - id: kubeconfig
+#        name: Kubeconfig Params
+#        run: |
+#          export cluster_url=`kubectl cluster-info | grep -E '(https):[-A-Za-z0-9+&@#/%?=~_|.;]+[-A-Za-z0-9+&@#/%=~_|]' -o -m 1`
+#          export token=`kubectl -n kube-system get secret $(kubectl -n kube-system get secret | grep argocd-manager | awk '{print $1}') -o jsonpath='{.data.token}' | base64 --decode`
+#          echo "::set-output name=cluster_url::${cluster_url}"
+#          echo "::set-output name=token::${token}"
 
       - name: User This Tag
         run: sed -i "s/latest/${{ github.sha }}/g"  Dockerfile
@@ -69,8 +69,9 @@ jobs:
       - name: Self
         uses: ./
         with:
-          cluster-url: ${{ steps.kubeconfig.outputs.cluster_url }}
-          token: ${{ steps.kubeconfig.outputs.token }}
+          kubeconfig: /github/runner/.kube/config
+#          cluster-url: ${{ steps.kubeconfig.outputs.cluster_url }}
+#          token: ${{ steps.kubeconfig.outputs.token }}
           name: alerting-rules
           namespace: default
           dir: example

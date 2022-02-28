@@ -7,4 +7,4 @@ export namespace=$4
 export files=$5
 export data=$6
 
-/configmap-update
+/configmap-update --kubeconfig=$7

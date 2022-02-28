@@ -3,20 +3,22 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
-	"github.com/ghodss/yaml"
 	"io/ioutil"
+	"k8s.io/client-go/tools/clientcmd"
+	"log"
+	"net/url"
+	"os"
+	"path/filepath"
+
+	"github.com/ghodss/yaml"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/client-go/util/homedir"
-	"log"
-	"net/url"
-	"os"
-	"path/filepath"
 )
 
 func init() {
@@ -24,15 +26,29 @@ func init() {
 }
 
 func main() {
-	var kubeConfig string
+	var kubeconfig *string
 	if home := homedir.HomeDir(); home != "" {
-		kubeConfig = filepath.Join(home, ".kube", "config")
+		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	} else {
+		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+	}
+	flag.Parse()
+
+	var err error
+	var config *rest.Config
+
+	if *kubeconfig != "" {
+		exist, err := pathExists(*kubeconfig)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		if exist {
+			config, err = clientcmd.BuildConfigFromFlags("", *kubeconfig)
+		}
 	}
 
 	// use the current context in kubeconfig
-	config, err := clientcmd.BuildConfigFromFlags("", kubeConfig)
-	if err != nil {
-		err = nil
+	if config == nil {
 		clusterURL, err := url.Parse(os.Getenv("cluster_url"))
 		if err != nil {
 			log.Fatalln(err)
@@ -134,4 +150,15 @@ func main() {
 		log.Fatalln(err)
 	}
 	fmt.Printf("update configmap(%s) success\n", cm.Name)
+}
+
+func pathExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
 }

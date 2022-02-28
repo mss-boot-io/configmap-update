@@ -1,13 +1,17 @@
 name: 'configmap-update'
 description: 'configmap update action'
 inputs:
+  kubeconfig:
+    description: 'k8s kubeconfig'
+    required: false
+    default: '/github/runner/.kube/config'
   cluster-url:
     description: 'k8s api server url'
-    required: false
+    required: true
     default: ''
   token:
     description: 'k8s api token'
-    required: false
+    required: true
     default: ''
   name:
     description: 'configmap name'
@@ -39,3 +43,4 @@ runs:
     - ${{ inputs.namespace }}
     - ${{ inputs.files }}
     - ${{ inputs.data }}
+    - ${{ inputs.kubeconfig }}
