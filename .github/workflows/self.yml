@@ -4,43 +4,42 @@ on:
   push:
     branches:
       - main
-    tags:
-      - "v*"
+
 
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build:
-    runs-on: self-hosted
-    steps:
-      - name: Set up Go 1.17
-        uses: actions/setup-go@v1
-        with:
-          go-version: 1.17
-        id: go
-
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Build
-        run: |
-          go mod tidy
-          go mod vendor
-          make build
+#  build:
+#    runs-on: self-hosted
+#    steps:
+#      - name: Set up Go 1.17
+#        uses: actions/setup-go@v1
+#        with:
+#          go-version: 1.17
+#        id: go
+#
+#      - name: Checkout
+#        uses: actions/checkout@v2
+#
+#      - name: Build
+#        run: |
+#          go mod tidy
+#          go mod vendor
+#          make build
 
   test:
     runs-on: self-hosted
-    needs: build
+#    needs: build
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - uses: actions/setup-python@v2
-        with:
-          python-version: "3.8"
-      - uses: aws-actions/setup-sam@v1
+#      - uses: actions/setup-python@v2
+#        with:
+#          python-version: "3.8"
+#      - uses: aws-actions/setup-sam@v1
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -63,11 +62,11 @@ jobs:
           echo "::set-output name=cluster_url::${cluster_url}"
           echo "::set-output name=token::${token}"
 
-      - name: User This Tag
-        run: sed -i "s/latest/${{ github.sha }}/g"  Dockerfile
+#      - name: User This Tag
+#        run: sed -i "s/latest/${{ github.sha }}/g"  Dockerfile
 
       - name: Self
-        uses: ./
+        uses: mss-boot-io/configmap-update@v0.5
         with:
 #          kubeconfig: /github/runner/.kube/config
           cluster-url: ${{ steps.kubeconfig.outputs.cluster_url }}

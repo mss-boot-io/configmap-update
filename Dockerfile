@@ -1,23 +1,11 @@
-FROM golang:alpine as builder
-
-MAINTAINER lwnmengjing <991154416@qq.com>
-
-#ENV GOPROXY https://goproxy.io/
-
-WORKDIR /go/release
-RUN apk update && apk add tzdata && apk add curl unzip procps ca-certificates
-
-COPY go.mod ./go.mod
-COPY . .
-
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -a -installsuffix cgo -o configmap-update .
-
 FROM alpine
 
-COPY --from=builder /go/release/configmap-update /
-
-COPY --from=builder /go/release/entrypoint.sh /entrypoint.sh
+COPY entrypoint.sh /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
+RUN apk add curl
+RUN curl -O https://mss-boot-io.github.io/configmap-update/v0.5/linux_amd64.tar.gz
+RUN tar -zxvf linux_amd64.tar.gz && rm -rf linux_amd64.tar.gz
+RUN mv configmap-update /configmap-update
 
 ENTRYPOINT ["/entrypoint.sh"]
