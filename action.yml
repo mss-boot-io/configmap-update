@@ -1,16 +1,12 @@
 name: 'configmap-update'
 description: 'configmap update action'
 inputs:
-  kubeconfig:
+  region:
     description: 'k8s kubeconfig'
     required: false
-    default: '/github/runner/.kube/config'
-  cluster-url:
-    description: 'k8s api server url'
-    required: true
-    default: ''
-  token:
-    description: 'k8s api token'
+    default: '.kube/config'
+  cluster-name:
+    description: 'cluster name'
     required: true
     default: ''
   name:
@@ -37,10 +33,9 @@ runs:
   using: 'docker'
   image: 'Dockerfile'
   args:
-    - ${{ inputs.cluster-url}}
-    - ${{ inputs.token }}
     - ${{ inputs.name }}
     - ${{ inputs.namespace }}
     - ${{ inputs.files }}
     - ${{ inputs.data }}
-    - ${{ inputs.kubeconfig }}
+    - ${{ inputs.region}}
+    - ${{ inputs.cluster-name }}

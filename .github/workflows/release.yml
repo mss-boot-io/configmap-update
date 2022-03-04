@@ -52,14 +52,12 @@ jobs:
           GOARCH: amd64
         run: |
           if [ ${GOOS} == windows ];then
-            export app=configmap-update.exe
+            go build -o ${GOOS}_${GOARCH}.exe .
+            mv ${GOOS}_${GOARCH}.exe artifact
           else
-            export app=configmap-update
+            go build -o ${GOOS}_${GOARCH} .
+            mv ${GOOS}_${GOARCH} artifact
           fi
-          go build -o ${app} .
-          tar -zcvf ${GOOS}_${GOARCH}.tar.gz ./${app}
-          rm -rf ./${app}
-          mv ${GOOS}_${GOARCH}.tar.gz artifact
       - name: Upload
         uses: actions/upload-artifact@v2
         env:

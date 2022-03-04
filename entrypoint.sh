@@ -1,10 +1,10 @@
 #!/bin/sh -l
 
-export cluster_url=$1
-export token=$2
-export name=$3
-export namespace=$4
-export files=$5
-export data=$6
+export name=$1
+export namespace=$2
+export files=$3
+export data=$4
 
-/configmap-update --kubeconfig=$7
+aws eks --region $5 update-kubeconfig --name $6
+
+/configmap-update

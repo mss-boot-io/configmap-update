@@ -41,26 +41,24 @@ jobs:
 #          python-version: "3.8"
 #      - uses: aws-actions/setup-sam@v1
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+#      - name: Configure AWS credentials
+#        uses: aws-actions/configure-aws-credentials@v1
+#        with:
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          aws-region: ${{ secrets.AWS_REGION }}
 
-      - id: install
-        uses: azure/setup-kubectl@v2.0
+#      - id: install
+#        uses: azure/setup-kubectl@v2.0
 
-      - name: Update Kubeconfig
-        run: aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }}
-
-      - id: kubeconfig
-        name: Kubeconfig Params
-        run: |
-          export cluster_url=`kubectl cluster-info | grep -E '(https):[-A-Za-z0-9+&@#/%?=~_|.;]+[-A-Za-z0-9+&@#/%=~_|]' -o -m 1`
-          export token=`kubectl -n kube-system get secret $(kubectl -n kube-system get secret | grep argocd-manager | awk '{print $1}') -o jsonpath='{.data.token}' | base64 --decode`
-          echo "::set-output name=cluster_url::${cluster_url}"
-          echo "::set-output name=token::${token}"
+#      - name: Update Kubeconfig
+#        run: aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name ${{ secrets.EKS_CLUSTER_NAME }}
+#
+#      - id: kubeconfig
+#        name: Kubeconfig Params
+#        run: |
+#          cp -r ~/.kube ./
+#          cat .kube/config
 
 #      - name: User This Tag
 #        run: sed -i "s/latest/${{ github.sha }}/g"  Dockerfile
@@ -68,12 +66,12 @@ jobs:
       - name: Self
         uses: ./
         with:
-#          kubeconfig: /github/runner/.kube/config
-          cluster-url: ${{ steps.kubeconfig.outputs.cluster_url }}
-          token: ${{ steps.kubeconfig.outputs.token }}
+#          kubeconfig: /github/workspace/.kube/config
           name: alerting-rules
           namespace: default
           dir: example
+          region: ${{ secrets.AWS_REGION }}
+          cluster-name: ${{ secrets.EKS_CLUSTER_NAME }}
 #          files: |
 #            - example/test.yml
 
