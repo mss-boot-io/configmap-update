@@ -74,8 +74,16 @@ func main() {
 			log.Fatalln(err)
 		}
 		for i := range filepathNames {
-			fmt.Println(filepathNames[i]) //打印path
-			files = append(files, filepath.Join(os.Getenv("dir"), filepathNames[i]))
+			var exist bool
+			for j := range files {
+				if files[j] == filepathNames[i] {
+					exist = true
+				}
+			}
+			if exist {
+				continue
+			}
+			files = append(files, filepathNames[i])
 		}
 	}
 	for i := range files {
